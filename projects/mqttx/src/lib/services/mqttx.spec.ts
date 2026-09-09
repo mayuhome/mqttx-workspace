@@ -37,6 +37,7 @@ describe('MqttxService', () => {
 
   beforeEach(() => {
     lastClient = undefined;
+    vi.mocked(mqtt.connect).mockClear();
     TestBed.configureTestingModule({});
     service = TestBed.inject(MqttxService);
   });
@@ -52,6 +53,26 @@ describe('MqttxService', () => {
     await vi.waitFor(() => expect(lastClient).toBeDefined());
 
     lastClient!.emit('connect');
+    await vi.waitFor(() => expect(service.isConnected()).toBe(true));
+  });
+
+  it('reports disconnected status and allows reconnecting after disconnect()', async () => {
+    const connectMock = vi.mocked(mqtt.connect);
+
+    service.connect({ url: 'mqtt://broker.local' });
+    await vi.waitFor(() => expect(connectMock).toHaveBeenCalledTimes(1));
+    lastClient!.emit('connect');
+    await vi.waitFor(() => expect(service.isConnected()).toBe(true));
+
+    await service.disconnect();
+    expect(service.connectionStatus()).toBe('disconnected');
+    expect(service.isConnected()).toBe(false);
+    expect(service.isConnecting()).toBe(false);
+
+    service.connect({ url: 'mqtt://broker.local' });
+    await vi.waitFor(() => expect(connectMock).toHaveBeenCalledTimes(2));
+    const secondClient = connectMock.mock.results[1].value as FakeMqttClient;
+    secondClient.emit('connect');
     await vi.waitFor(() => expect(service.isConnected()).toBe(true));
   });
 

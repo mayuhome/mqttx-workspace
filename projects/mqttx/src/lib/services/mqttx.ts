@@ -106,10 +106,17 @@ export class MqttxService implements OnDestroy {
     this.requestedConfig.set(null);
     this.rejectOfflineQueue(new Error('MqttxService: disconnected before queued message could be sent'));
     if (!client) {
+      this.status.set('disconnected');
       return Promise.resolve();
     }
     client.removeAllListeners();
-    return new Promise((resolve) => client.end(force, {}, () => resolve()));
+    return new Promise((resolve) =>
+      client.end(force, {}, () => {
+        // 'close' would normally flip this, but listeners were just removed above.
+        this.status.set('disconnected');
+        resolve();
+      }),
+    );
   }
 
   /** Subscribe to one or more topics (re-subscribed automatically on reconnect). */

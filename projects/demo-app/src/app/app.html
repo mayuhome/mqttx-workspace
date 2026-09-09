@@ -81,4 +81,57 @@
       </ul>
     }
   </section>
+
+  <section class="card">
+    <h2>Multi-Broker Pool</h2>
+    <p class="hint">Backed by <code>MqttxFactory</code> — each entry is an independent, named connection.</p>
+    <div class="field-row">
+      <label for="newBrokerName">Name</label>
+      <input id="newBrokerName" type="text" placeholder="e.g. secondary" [ngModel]="newBrokerName()" (ngModelChange)="newBrokerName.set($event)" />
+    </div>
+    <div class="field-row">
+      <label for="newBrokerUrl">Broker URL</label>
+      <input id="newBrokerUrl" type="text" [ngModel]="newBrokerUrl()" (ngModelChange)="newBrokerUrl.set($event)" />
+    </div>
+    <div class="actions">
+      <button type="button" (click)="addBroker()" [disabled]="!canAddBroker()">Add Broker</button>
+    </div>
+    @if (brokers().length === 0) {
+      <p class="empty">No additional brokers yet.</p>
+    } @else {
+      <ul class="broker-list">
+        @for (broker of brokers(); track broker.name) {
+          <li class="broker-item">
+            <div class="broker-item__header">
+              <strong>{{ broker.name }}</strong>
+              <span class="status-badge" [class]="'status-badge--' + broker.service.connectionStatus()">
+                {{ broker.service.connectionStatus() }}
+              </span>
+            </div>
+            <span class="broker-item__url">{{ broker.url }}</span>
+            <div class="actions">
+              <button
+                type="button"
+                (click)="reconnectBroker(broker)"
+                [disabled]="broker.service.isConnected() || broker.service.isConnecting()"
+              >
+                Connect
+              </button>
+              <button
+                type="button"
+                (click)="disconnectBroker(broker)"
+                [disabled]="!broker.service.isConnected() && !broker.service.isConnecting()"
+              >
+                Disconnect
+              </button>
+              <button type="button" (click)="sendTestMessage(broker)" [disabled]="!broker.service.isConnected()">
+                Send test message
+              </button>
+              <button type="button" (click)="removeBroker(broker.name)">Remove</button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
 </main>
