@@ -2,8 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { EventEmitter } from 'events';
 import { vi } from 'vitest';
 import { MqttxFactory } from './mqttx-factory';
+import { MQTTX_POOL_SIZE } from './tokens/mqttx.tokens';
 
 class FakeMqttClient extends EventEmitter {
+  options: { reconnectPeriod?: number } = { reconnectPeriod: 4000 };
   subscribe = vi.fn();
   unsubscribe = vi.fn();
   publishAsync = vi.fn().mockResolvedValue(undefined);
@@ -49,5 +51,33 @@ describe('MqttxFactory', () => {
     factory.getOrCreate('broker-a', { url: 'mqtt://broker.local' });
     factory.remove('broker-a');
     expect(factory.get('broker-a')).toBeUndefined();
+  });
+
+  it('reports pool size and names', () => {
+    factory.getOrCreate('broker-a', { url: 'mqtt://broker-a.local' });
+    factory.getOrCreate('broker-b', { url: 'mqtt://broker-b.local' });
+    expect(factory.size()).toBe(2);
+    expect(factory.names()).toEqual(['broker-a', 'broker-b']);
+  });
+});
+
+describe('MqttxFactory (bounded pool)', () => {
+  let factory: MqttxFactory;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [{ provide: MQTTX_POOL_SIZE, useValue: 2 }] });
+    factory = TestBed.inject(MqttxFactory);
+  });
+
+  it('evicts the least-recently-used client once the pool is full', () => {
+    factory.getOrCreate('broker-a', { url: 'mqtt://broker-a.local' });
+    factory.getOrCreate('broker-b', { url: 'mqtt://broker-b.local' });
+    factory.get('broker-a'); // touch broker-a so broker-b becomes the LRU entry
+    factory.getOrCreate('broker-c', { url: 'mqtt://broker-c.local' });
+
+    expect(factory.size()).toBe(2);
+    expect(factory.get('broker-b')).toBeUndefined();
+    expect(factory.get('broker-a')).toBeDefined();
+    expect(factory.get('broker-c')).toBeDefined();
   });
 });

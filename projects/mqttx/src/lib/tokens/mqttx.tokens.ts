@@ -8,6 +8,9 @@ import { MqttxConnectionConfig } from '../types/mqttx.types';
  */
 export const MQTTX_CONFIG = new InjectionToken<MqttxConnectionConfig>('MQTTX_CONFIG');
 
+/** Max concurrently pooled clients for `MqttxFactory` (defaults to `MQTTX_DEFAULT_MAX_POOL_SIZE`). */
+export const MQTTX_POOL_SIZE = new InjectionToken<number>('MQTTX_POOL_SIZE');
+
 /** Registers an app-wide default MQTT connection config for `MqttxService`. */
 export function provideMqttx(config: MqttxConnectionConfig): EnvironmentProviders {
   return makeEnvironmentProviders([{ provide: MQTTX_CONFIG, useValue: config }]);

@@ -4,7 +4,11 @@ import type { IClientOptions, MqttClient } from 'mqtt';
 import { Observable, Subject, filter, firstValueFrom, map, shareReplay, throttleTime, timeout } from 'rxjs';
 import {
   MQTTX_DEFAULT_CONFIG,
+  MQTTX_DEFAULT_MAX_QUEUED_MESSAGES,
   MQTTX_DEFAULT_MAX_RECONNECT_ATTEMPTS,
+  MQTTX_DEFAULT_MAX_RECONNECT_PERIOD,
+  MQTTX_DEFAULT_RECONNECT_BACKOFF_MULTIPLIER,
+  MQTTX_DEFAULT_RECONNECT_PERIOD,
   MQTTX_DEFAULT_REQUEST_TIMEOUT,
   MQTTX_MESSAGE_BUFFER_SIZE,
 } from '../constants/mqttx.constants';
@@ -59,7 +63,15 @@ export class MqttxService implements OnDestroy {
   });
 
   private activeClient: MqttClient | null = null;
+  private activeConfig: MqttxConnectionConfig | null = null;
   private reconnectAttempts = 0;
+  private readonly offlineQueue: Array<{
+    topic: string;
+    payload: unknown;
+    options: MqttxPublishOptions;
+    resolve: () => void;
+    reject: (error: Error) => void;
+  }> = [];
 
   // Public readonly state
   public readonly connectionStatus = this.status.asReadonly();
@@ -90,7 +102,9 @@ export class MqttxService implements OnDestroy {
   public disconnect(force = false): Promise<void> {
     const client = this.activeClient;
     this.activeClient = null;
+    this.activeConfig = null;
     this.requestedConfig.set(null);
+    this.rejectOfflineQueue(new Error('MqttxService: disconnected before queued message could be sent'));
     if (!client) {
       return Promise.resolve();
     }
@@ -133,19 +147,12 @@ export class MqttxService implements OnDestroy {
   public publish<T = unknown>(topic: string, payload: T, options: MqttxPublishOptions = {}): Promise<void> {
     const client = this.activeClient;
     if (!client || !this.isConnected()) {
+      if (this.activeConfig?.queueOfflineMessages) {
+        return this.enqueueOfflineMessage(topic, payload, options);
+      }
       return Promise.reject(new Error('MqttxService: cannot publish, client is not connected'));
     }
-    const message: string | Buffer =
-      typeof payload === 'string' || payload instanceof Uint8Array ? (payload as string | Buffer) : JSON.stringify(payload);
-    return client
-      .publishAsync(topic, message, {
-        qos: options.qos ?? 0,
-        retain: options.retain ?? false,
-        dup: options.dup ?? false,
-      })
-      .then(() => {
-        this.statistics.update((stats) => ({ ...stats, messagesSent: stats.messagesSent + 1 }));
-      });
+    return this.sendNow(client, topic, payload, options);
   }
 
   /** Publish a request and resolve with the first matching response, or reject on timeout. */
@@ -172,9 +179,15 @@ export class MqttxService implements OnDestroy {
     return new Promise((resolve, reject) => {
       this.status.set('connecting');
       this.reconnectAttempts = 0;
+      this.activeConfig = config;
       this.statistics.update((stats) => ({ ...stats, connectionAttempts: stats.connectionAttempts + 1 }));
 
       const maxAttempts = config.maxReconnectAttempts ?? MQTTX_DEFAULT_MAX_RECONNECT_ATTEMPTS;
+      const backoffMultiplier = config.reconnectBackoffMultiplier ?? MQTTX_DEFAULT_RECONNECT_BACKOFF_MULTIPLIER;
+      const maxReconnectPeriod = config.maxReconnectPeriod ?? MQTTX_DEFAULT_MAX_RECONNECT_PERIOD;
+      const basePeriod = config.reconnectPeriod ?? MQTTX_DEFAULT_RECONNECT_PERIOD;
+
+      this.log('connecting', { url: config.url });
       const client = mqtt.connect(config.url, this.toClientOptions(config));
       this.activeClient = client;
 
@@ -199,6 +212,8 @@ export class MqttxService implements OnDestroy {
       client.on('connect', () => {
         abortSignal.removeEventListener('abort', onAbort);
         this.reconnectAttempts = 0;
+        client.options.reconnectPeriod = basePeriod;
+        this.log('connected', { url: config.url });
         this.handleConnected(this.status() === 'reconnecting');
         settle(() => resolve(client));
       });
@@ -208,6 +223,7 @@ export class MqttxService implements OnDestroy {
         this.reconnectAttempts++;
         if (this.reconnectAttempts > maxAttempts) {
           const giveUpError = new Error(`MqttxService: giving up after ${maxAttempts} failed reconnect attempts`);
+          this.log('giving up', { attempts: this.reconnectAttempts, maxAttempts });
           this.status.set('error');
           this.errorSubject.next(giveUpError);
           client.removeAllListeners();
@@ -216,22 +232,35 @@ export class MqttxService implements OnDestroy {
             this.activeClient = null;
           }
           settle(() => reject(giveUpError));
+          return;
         }
+        // Exponential backoff: grow the delay before the *next* attempt, capped at maxReconnectPeriod.
+        const nextPeriod = Math.min(
+          (client.options.reconnectPeriod ?? basePeriod) * backoffMultiplier,
+          maxReconnectPeriod,
+        );
+        client.options.reconnectPeriod = nextPeriod;
+        this.log('reconnecting', { attempt: this.reconnectAttempts, maxAttempts, nextPeriod });
       });
 
       client.on('close', () => {
         if (this.status() !== 'disconnected' && this.status() !== 'error') {
           this.status.set('disconnected');
           this.statistics.update((stats) => ({ ...stats, lastDisconnectedAt: new Date() }));
+          this.log('disconnected');
         }
       });
 
-      client.on('offline', () => this.status.set('offline'));
+      client.on('offline', () => {
+        this.status.set('offline');
+        this.log('offline');
+      });
 
       client.on('error', (error) => {
         this.status.set('error');
         this.statistics.update((stats) => ({ ...stats, failedConnections: stats.failedConnections + 1 }));
         this.errorSubject.next(error);
+        this.log('error', error.message);
         settle(() => reject(error));
       });
 
@@ -287,6 +316,62 @@ export class MqttxService implements OnDestroy {
       lastConnectedAt: new Date(),
     }));
     this.resubscribeAll();
+    this.flushOfflineQueue();
+  }
+
+  private sendNow<T>(client: MqttClient, topic: string, payload: T, options: MqttxPublishOptions): Promise<void> {
+    const message: string | Buffer =
+      typeof payload === 'string' || payload instanceof Uint8Array ? (payload as string | Buffer) : JSON.stringify(payload);
+    return client
+      .publishAsync(topic, message, {
+        qos: options.qos ?? 0,
+        retain: options.retain ?? false,
+        dup: options.dup ?? false,
+      })
+      .then(() => {
+        this.statistics.update((stats) => ({ ...stats, messagesSent: stats.messagesSent + 1 }));
+      });
+  }
+
+  private enqueueOfflineMessage<T>(topic: string, payload: T, options: MqttxPublishOptions): Promise<void> {
+    const maxQueued = this.activeConfig?.maxQueuedMessages ?? MQTTX_DEFAULT_MAX_QUEUED_MESSAGES;
+    if (this.offlineQueue.length >= maxQueued) {
+      this.offlineQueue.shift()?.reject(new Error('MqttxService: offline queue overflow, dropping oldest message'));
+    }
+    this.log('queued offline message', { topic, queued: this.offlineQueue.length + 1 });
+    return new Promise((resolve, reject) => {
+      this.offlineQueue.push({ topic, payload, options, resolve, reject });
+    });
+  }
+
+  private rejectOfflineQueue(error: Error): void {
+    if (this.offlineQueue.length === 0) {
+      return;
+    }
+    const pending = this.offlineQueue.splice(0, this.offlineQueue.length);
+    pending.forEach((entry) => entry.reject(error));
+  }
+
+  private flushOfflineQueue(): void {
+    if (this.offlineQueue.length === 0) {
+      return;
+    }
+    const client = this.activeClient;
+    if (!client) {
+      return;
+    }
+    const pending = this.offlineQueue.splice(0, this.offlineQueue.length);
+    this.log('flushing offline queue', { count: pending.length });
+    pending.forEach((entry) => {
+      this.sendNow(client, entry.topic, entry.payload, entry.options).then(entry.resolve, entry.reject);
+    });
+  }
+
+  private log(message: string, details?: unknown): void {
+    if (this.activeConfig?.debug) {
+      // eslint-disable-next-line no-console
+      console.debug(`[mqttx] ${message}`, details ?? '');
+    }
   }
 
   private parsePayload(payload: Buffer): unknown {

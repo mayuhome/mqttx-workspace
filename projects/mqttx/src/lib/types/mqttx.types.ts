@@ -7,6 +7,16 @@ export interface MqttxConnectionConfig {
   reconnectPeriod?: number;
   /** Give up (status becomes 'error') after this many consecutive failed (re)connect attempts. */
   maxReconnectAttempts?: number;
+  /** Multiply `reconnectPeriod` by this factor after each failed reconnect attempt. */
+  reconnectBackoffMultiplier?: number;
+  /** Upper bound (ms) for the backed-off reconnect period. */
+  maxReconnectPeriod?: number;
+  /** Queue publish() calls made while disconnected and flush them once reconnected. */
+  queueOfflineMessages?: boolean;
+  /** Max number of queued offline messages; oldest is dropped once exceeded. */
+  maxQueuedMessages?: number;
+  /** Log connection lifecycle events to the console. */
+  debug?: boolean;
   keepAlive?: number;
   connectTimeout?: number;
   path?: string;

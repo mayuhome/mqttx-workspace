@@ -75,18 +75,34 @@ calling `connect()` writes a new config signal, which the resource picks up to (
 | `subscribe(topics, { qos })` | Subscribe now (and automatically re-subscribe on reconnect) |
 | `unsubscribe(topics)` | Unsubscribe and forget the topic |
 | `onTopic<T>(topic, { throttleMs })` | Typed, wildcard-aware (`+`/`#`) message `Observable<T>` |
-| `publish<T>(topic, payload, options)` | Publish; non-string/Buffer payloads are JSON-encoded |
+| `publish<T>(topic, payload, options)` | Publish; non-string/Buffer payloads are JSON-encoded. Queued instead of rejected when offline if `queueOfflineMessages` is set |
 | `publishAndWait<TReq, TRes>(reqTopic, resTopic, payload, timeoutMs)` | Request/response over MQTT |
+
+**Reconnection.** `reconnectPeriod` grows by `reconnectBackoffMultiplier` after each failed attempt
+(capped at `maxReconnectPeriod`) and resets on success. Once `maxReconnectAttempts` consecutive
+attempts fail, the client stops retrying, `connectionStatus` becomes `'error'`, and the error is
+emitted on `errors$` — the service never retries forever.
+
+**Offline queueing.** With `queueOfflineMessages: true`, `publish()` calls made while disconnected
+are queued (bounded by `maxQueuedMessages`, oldest dropped first) and flushed in order once the
+client reconnects, instead of rejecting immediately.
+
+**Debug logging.** Set `debug: true` in the connection config to log connection lifecycle events
+(connecting/connected/reconnecting/giving up/offline/error/queueing) to `console.debug`.
 
 ### `MqttxFactory`
 
 For apps that need multiple broker connections at once, `MqttxFactory` creates and tracks named,
-independent `MqttxService` instances (separate client, subscriptions and state per name).
+independent `MqttxService` instances (separate client, subscriptions and state per name). It acts
+as a bounded connection pool: once `maxPoolSize` (default 20, override via `MQTTX_POOL_SIZE`) is
+reached, the least-recently-used client is disconnected and evicted to make room.
 
 ```ts
 const factory = inject(MqttxFactory);
 const primary = factory.getOrCreate('primary', { url: 'wss://broker-a.example.com/mqtt' });
 const secondary = factory.getOrCreate('secondary', { url: 'wss://broker-b.example.com/mqtt' });
+factory.size(); // 2
+factory.names(); // ['primary', 'secondary']
 factory.remove('secondary');
 factory.disconnectAll();
 ```
@@ -94,6 +110,7 @@ factory.disconnectAll();
 ### Tokens & config
 
 - `MQTTX_CONFIG` — `InjectionToken<MqttxConnectionConfig>` for an app-wide default config.
+- `MQTTX_POOL_SIZE` — `InjectionToken<number>` overriding `MqttxFactory`'s max pool size.
 - `provideMqttx(config)` — convenience `EnvironmentProviders` for `MQTTX_CONFIG`.
 - `MqttxConnectionConfig`, `MqttxConnectionStatus`, `MqttxMessage<T>`, `MqttxPublishOptions`,
   `MqttxStatistics` — public types, see [types/mqttx.types.ts](src/lib/types/mqttx.types.ts).
