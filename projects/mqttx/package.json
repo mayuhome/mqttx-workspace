@@ -1,0 +1,25 @@
+{
+  "name": "mqttx",
+  "version": "0.0.1-alpha.0",
+  "description": "Enterprise MQTT client for Angular with Signals support",
+  "keywords": [
+    "angular",
+    "mqtt",
+    "signals",
+    "realtime",
+    "iot",
+    "websocket",
+    "reactive",
+    "typescript"
+  ],
+  "author": "Jade <mayuhome@163.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/common": "^22.1.0",
+    "@angular/core": "^22.1.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
