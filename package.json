@@ -6,7 +6,12 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "build:lib": "ng build mqttx",
+    "watch:lib": "ng build mqttx --watch --configuration development",
+    "test:lib": "ng test mqttx",
+    "build:demo": "ng build demo-app",
+    "test:demo": "ng test demo-app"
   },
   "private": true,
   "packageManager": "pnpm@11.17.0",

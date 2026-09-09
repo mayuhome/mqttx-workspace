@@ -12,14 +12,19 @@
     "reactive",
     "typescript"
   ],
-  "author": "Jade <mayuhome@163.com>",
+  "author": "mayuhome <mayuhome@163.com>",
   "license": "MIT",
   "peerDependencies": {
     "@angular/common": "^22.1.0",
     "@angular/core": "^22.1.0"
   },
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "mqtt": "^5.15.2"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mayuhome/mqttx-workspace.git"
+  }
 }
