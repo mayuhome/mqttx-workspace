@@ -33,7 +33,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --dangerously-allow-builds
+        run: pnpm install --frozen-lockfile --dangerously-allow-all-builds
 
       - name: Run unit tests
         run: pnpm run test:lib:ci
