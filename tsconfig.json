@@ -8,6 +8,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
+      "ngx-mqttx": ["./dist/mqttx"],
       "mqttx": ["./dist/mqttx"]
     },
     "skipLibCheck": true,

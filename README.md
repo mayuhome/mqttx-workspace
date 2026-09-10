@@ -1,8 +1,8 @@
-# MQTTX - Enterprise MQTT Client for Angular
+# ngx-mqttx - Enterprise MQTT Client for Angular
 
-[![npm version](https://img.shields.io/npm/v/mqttx.svg?style=flat-square)](https://www.npmjs.com/package/mqttx)
+[![npm version](https://img.shields.io/npm/v/ngx-mqttx.svg?style=flat-square)](https://www.npmjs.com/package/ngx-mqttx)
 [![build status](https://img.shields.io/github/actions/workflow/status/mayuhome/mqttx-workspace/ci.yml?branch=main&style=flat-square)](https://github.com/mayuhome/mqttx-workspace)
-[![license](https://img.shields.io/npm/l/mqttx.svg?style=flat-square)](https://github.com/mayuhome/mqttx-workspace/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/ngx-mqttx.svg?style=flat-square)](https://github.com/mayuhome/mqttx-workspace/blob/main/LICENSE)
 [![Angular](https://img.shields.io/badge/Angular-19%2B-DD0031.svg?style=flat-square&logo=angular)](https://angular.dev/)
 
 > ⚡ Enterprise-grade, Signal-driven MQTT Client for modern Angular applications.
@@ -25,16 +25,16 @@
 ### 1. Installation
 
 ```bash
-pnpm add mqttx mqtt
+pnpm add ngx-mqttx mqtt
 # or
-npm install mqttx mqtt
+npm install ngx-mqttx mqtt
 ```
 
 ### 2. Configure in `app.config.ts`
 
 ```typescript
 import { ApplicationConfig } from '@angular/core';
-import { provideMqttx } from 'mqttx';
+import { provideMqttx } from 'ngx-mqttx';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -51,7 +51,7 @@ export const appConfig: ApplicationConfig = {
 
 ```typescript
 import { Component, inject, OnInit } from '@angular/core';
-import { MqttxService } from 'mqttx';
+import { MqttxService } from 'ngx-mqttx';
 
 @Component({
   selector: 'app-root',

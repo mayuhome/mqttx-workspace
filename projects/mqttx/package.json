@@ -1,5 +1,5 @@
 {
-  "name": "mqttx",
+  "name": "ngx-mqttx",
   "version": "0.0.1-alpha.0",
   "description": "Enterprise MQTT client for Angular with Signals and resource() support",
   "keywords": [
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mayuhome/mqttx-workspace.git",
+    "url": "git+https://github.com/mayuhome/mqttx-workspace.git",
     "directory": "projects/mqttx"
   },
   "publishConfig": {

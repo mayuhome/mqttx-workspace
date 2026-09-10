@@ -1,14 +1,14 @@
-# MQTTX 🚀
+# ngx-mqttx 🚀
 
-[![npm version](https://img.shields.io/npm/v/mqttx.svg?style=flat-square)](https://www.npmjs.com/package/mqttx)
-[![npm downloads](https://img.shields.io/npm/dm/mqttx.svg?style=flat-square)](https://www.npmjs.com/package/mqttx)
-[![license](https://img.shields.io/npm/l/mqttx.svg?style=flat-square)](https://github.com/mayuhome/mqttx-workspace/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/ngx-mqttx.svg?style=flat-square)](https://www.npmjs.com/package/ngx-mqttx)
+[![npm downloads](https://img.shields.io/npm/dm/ngx-mqttx.svg?style=flat-square)](https://www.npmjs.com/package/ngx-mqttx)
+[![license](https://img.shields.io/npm/l/ngx-mqttx.svg?style=flat-square)](https://github.com/mayuhome/mqttx-workspace/blob/main/LICENSE)
 [![Angular](https://img.shields.io/badge/Angular-19%2B-DD0031.svg?style=flat-square&logo=angular)](https://angular.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-blue.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 
 > **Enterprise-grade, Signal-driven MQTT Client for modern Angular applications.**
 
-`mqttx` is a reactive Angular wrapper around [MQTT.js](https://github.com/mqttjs/MQTT.js) built specifically for Angular 19+ using **Angular Signals** and the **`resource()`** API. It provides seamless signal integration for UI reactivity, smart exponential reconnection backoff, offline message queueing, typed wildcard topic streams, and multi-broker connection pooling.
+`ngx-mqttx` is a reactive Angular wrapper around [MQTT.js](https://github.com/mqttjs/MQTT.js) built specifically for Angular 19+ using **Angular Signals** and the **`resource()`** API. It provides seamless signal integration for UI reactivity, smart exponential reconnection backoff, offline message queueing, typed wildcard topic streams, and multi-broker connection pooling.
 
 ---
 
@@ -29,13 +29,13 @@
 
 ```bash
 # Using npm
-npm install mqttx mqtt
+npm install ngx-mqttx mqtt
 
 # Using pnpm
-pnpm add mqttx mqtt
+pnpm add ngx-mqttx mqtt
 
 # Using yarn
-yarn add mqttx mqtt
+yarn add ngx-mqttx mqtt
 ```
 
 > **Requirements:** Angular `>= 19.0.0` and RxJS `>= 7.4.0`.
@@ -51,7 +51,7 @@ Provide an application-wide default connection configuration using `provideMqttx
 ```typescript
 // app.config.ts
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideMqttx } from 'mqttx';
+import { provideMqttx } from 'ngx-mqttx';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -76,7 +76,7 @@ Inject `MqttxService` to connect, monitor state with Signals, and consume typed 
 // dashboard.component.ts
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MqttxService } from 'mqttx';
+import { MqttxService } from 'ngx-mqttx';
 
 interface DeviceTelemetry {
   deviceId: string;
@@ -186,7 +186,7 @@ When your application communicates with multiple distinct MQTT brokers simultane
 
 ```typescript
 import { Component, inject, OnInit } from '@angular/core';
-import { MqttxFactory } from 'mqttx';
+import { MqttxFactory } from 'ngx-mqttx';
 
 @Component({ ... })
 export class MultiBrokerComponent implements OnInit {
@@ -211,7 +211,7 @@ export class MultiBrokerComponent implements OnInit {
 Configure max pool size using the `MQTTX_POOL_SIZE` injection token (default is 20):
 
 ```typescript
-import { MQTTX_POOL_SIZE } from 'mqttx';
+import { MQTTX_POOL_SIZE } from 'ngx-mqttx';
 
 export const appConfig: ApplicationConfig = {
   providers: [
