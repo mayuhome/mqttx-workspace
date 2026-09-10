@@ -13,7 +13,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -37,6 +37,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --dangerously-allow-all-builds
+
+      - name: Sync library version from git tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Syncing library package.json version to: $VERSION"
+          npm version $VERSION --prefix projects/mqttx --no-git-tag-version --allow-same-version
 
       - name: Run unit tests
         run: pnpm run test:lib:ci

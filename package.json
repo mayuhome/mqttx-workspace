@@ -13,7 +13,13 @@
     "test:lib": "ng test mqttx",
     "test:lib:ci": "ng test mqttx --no-watch",
     "build:demo": "ng build demo-app",
-    "test:demo": "ng test demo-app"
+    "test:demo": "ng test demo-app",
+    "release": "node scripts/release.js",
+    "release:patch": "node scripts/release.js patch",
+    "release:minor": "node scripts/release.js minor",
+    "release:major": "node scripts/release.js major",
+    "release:alpha": "node scripts/release.js prerelease --preid=alpha",
+    "release:beta": "node scripts/release.js prerelease --preid=beta"
   },
   "private": true,
   "packageManager": "pnpm@11.17.0",
