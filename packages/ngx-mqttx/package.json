@@ -24,10 +24,14 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mayuhome/mqttx-workspace.git",
-    "directory": "projects/mqttx"
+    "directory": "packages/ngx-mqttx"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "build": "ng build ngx-mqttx",
+    "test": "ng test ngx-mqttx --no-watch"
   },
   "peerDependencies": {
     "@angular/common": ">=19.0.0",

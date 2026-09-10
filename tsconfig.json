@@ -8,8 +8,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "ngx-mqttx": ["./dist/mqttx"],
-      "mqttx": ["./dist/mqttx"]
+      "ngx-mqttx": ["./packages/ngx-mqttx/src/public-api.ts", "./dist/ngx-mqttx"],
+      "mqttx": ["./packages/ngx-mqttx/src/public-api.ts", "./dist/ngx-mqttx"]
     },
     "skipLibCheck": true,
     "isolatedModules": true,
@@ -26,16 +26,16 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/mqttx/tsconfig.lib.json"
+      "path": "./packages/ngx-mqttx/tsconfig.lib.json"
     },
     {
-      "path": "./projects/mqttx/tsconfig.spec.json"
+      "path": "./packages/ngx-mqttx/tsconfig.spec.json"
     },
     {
-      "path": "./projects/demo-app/tsconfig.app.json"
+      "path": "./apps/demo-app/tsconfig.app.json"
     },
     {
-      "path": "./projects/demo-app/tsconfig.spec.json"
+      "path": "./apps/demo-app/tsconfig.spec.json"
     }
   ]
 }

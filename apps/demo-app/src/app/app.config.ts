@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideMqttx } from 'mqttx';
+import { provideMqttx } from 'ngx-mqttx';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {

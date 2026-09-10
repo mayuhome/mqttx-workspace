@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { MqttxFactory, MqttxMessage, MqttxService } from 'mqttx';
+import { MqttxFactory, MqttxMessage, MqttxService } from 'ngx-mqttx';
 
 const MAX_LOG_ENTRIES = 50;
 

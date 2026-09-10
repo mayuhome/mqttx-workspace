@@ -80,27 +80,31 @@ export class AppComponent implements OnInit {
 
 ## 📂 Project Structure
 
-This workspace is managed with Angular CLI & pnpm:
+This monorepo is managed with **pnpm Workspaces**, **Turborepo**, and **Changesets**:
 
-- `projects/mqttx/`: The core Angular library source code.
-- `projects/demo-app/`: Interactive demo application for testing and demonstration.
+- `packages/ngx-mqttx/`: The core Angular library source code.
+- `apps/demo-app/`: Interactive Angular demo & testing application.
+- *(Future)* `packages/core/`, `packages/vue-mqttx/`, `packages/react-mqttx/`: Multi-framework packages.
 
 ---
 
-## 🛠️ Development
+## 🛠️ Development & Monorepo Workflow
 
 ```bash
 # Install dependencies
 pnpm install
 
+# Build all packages with Turborepo
+pnpm run build
+
 # Run library tests (CI mode)
 pnpm run test:lib:ci
 
-# Build the library
-pnpm run build:lib
-
 # Start demo app
 pnpm run start
+
+# Release / Versioning
+pnpm release:alpha  # Or: pnpm changeset
 ```
 
 ---

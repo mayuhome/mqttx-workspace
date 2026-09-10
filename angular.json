@@ -6,20 +6,20 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "mqttx": {
+    "ngx-mqttx": {
       "projectType": "library",
-      "root": "projects/mqttx",
-      "sourceRoot": "projects/mqttx/src",
+      "root": "packages/ngx-mqttx",
+      "sourceRoot": "packages/ngx-mqttx/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/mqttx/tsconfig.lib.prod.json"
+              "tsConfig": "packages/ngx-mqttx/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/mqttx/tsconfig.lib.json"
+              "tsConfig": "packages/ngx-mqttx/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -27,7 +27,33 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/mqttx/tsconfig.spec.json"
+            "tsConfig": "packages/ngx-mqttx/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "mqttx": {
+      "projectType": "library",
+      "root": "packages/ngx-mqttx",
+      "sourceRoot": "packages/ngx-mqttx/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "packages/ngx-mqttx/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "packages/ngx-mqttx/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "packages/ngx-mqttx/tsconfig.spec.json"
           }
         }
       }
@@ -39,23 +65,23 @@
           "style": "scss"
         }
       },
-      "root": "projects/demo-app",
-      "sourceRoot": "projects/demo-app/src",
+      "root": "apps/demo-app",
+      "sourceRoot": "apps/demo-app/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "browser": "projects/demo-app/src/main.ts",
-            "tsConfig": "projects/demo-app/tsconfig.app.json",
+            "browser": "apps/demo-app/src/main.ts",
+            "tsConfig": "apps/demo-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/demo-app/public"
+                "input": "apps/demo-app/public"
               }
             ],
-            "styles": ["projects/demo-app/src/styles.scss"]
+            "styles": ["apps/demo-app/src/styles.scss"]
           },
           "configurations": {
             "production": {

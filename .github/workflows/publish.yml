@@ -43,7 +43,7 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           echo "Syncing library package.json version to: $VERSION"
-          npm version $VERSION --prefix projects/mqttx --no-git-tag-version --allow-same-version
+          npm version $VERSION --prefix packages/ngx-mqttx --no-git-tag-version --allow-same-version
 
       - name: Run unit tests
         run: pnpm run test:lib:ci
@@ -64,7 +64,7 @@ jobs:
 
       - name: Publish to NPM
         run: |
-          cd dist/mqttx
+          cd dist/ngx-mqttx
           npm publish --access public --tag ${{ steps.dist_tag.outputs.tag }} --provenance
 
       - name: Create GitHub Release
