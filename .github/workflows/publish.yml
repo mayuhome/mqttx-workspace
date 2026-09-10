@@ -38,6 +38,10 @@ jobs:
           node-version: 22.x
           cache: 'pnpm'
 
+      # Trusted Publishing (OIDC) requires npm CLI >= 11.5.1; the version bundled with Node may be older.
+      - name: Update npm to a version that supports OIDC trusted publishing
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --dangerously-allow-all-builds
 
