@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
         "Mqttx"
-    ]
+    ],
+    "chat.tools.terminal.autoApprove": {
+        "pnpm": true
+    }
 }

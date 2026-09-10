@@ -7,9 +7,11 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci": "ng test mqttx --no-watch",
     "build:lib": "ng build mqttx",
     "watch:lib": "ng build mqttx --watch --configuration development",
     "test:lib": "ng test mqttx",
+    "test:lib:ci": "ng test mqttx --no-watch",
     "build:demo": "ng build demo-app",
     "test:demo": "ng test demo-app"
   },
